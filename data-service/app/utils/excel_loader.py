@@ -27,6 +27,27 @@ def load_companies_data():
             raise ValueError(f"Sheet not found. '{COMPANIES_SHEET_NAME} is not among Excel file sheets'")
         else:
             raise ValueError(f"Error while reading '{COMPANIES_SHEET_NAME}': {error}")
+        
+def load_industries_data():
+    industries_column_name = "ds_cnae"
+    
+    try:
+        industries_data_frame = pandas.read_excel(DATA_FILE_PATH, sheet_name=COMPANIES_SHEET_NAME, usecols=[industries_column_name])
+        
+        if industries_column_name not in industries_data_frame.columns:
+            raise ValueError(f"Columns '{industries_column_name}' not found in '{COMPANIES_SHEET_NAME}' sheet. Check your Excel file.")
+        
+        sorted_unique_indutries_list = sorted(industries_data_frame[industries_column_name].unique())
+        sorted_unique_industries_df = pandas.DataFrame(sorted_unique_indutries_list, columns=[industries_column_name])
+        
+        return sorted_unique_industries_df
+    except FileNotFoundError:
+        raise ValueError(f"Excel file '{DATA_FILE_PATH}' not found.")
+    except ValueError as error:
+        if f"Worksheet name '{COMPANIES_SHEET_NAME}' not found" in str(error):
+            raise ValueError(f"Sheet not found. '{COMPANIES_SHEET_NAME} is not among Excel file sheets'")
+        else:
+            raise ValueError(f"Error while reading '{COMPANIES_SHEET_NAME}': {error}")
 
 def load_transactions_data():
     try:
