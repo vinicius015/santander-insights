@@ -1,4 +1,5 @@
 data-service/venv/
+/venv
 
 __pycache__/
 *.py[cod]
