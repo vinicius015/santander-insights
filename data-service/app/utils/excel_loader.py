@@ -42,7 +42,7 @@ def load_transactions_data():
     except FileNotFoundError:
         raise ValueError(f"Excel file '{DATA_FILE_PATH}' not found.")
     except ValueError as error:
-        if f"Worksheet name '{TRANSACTIONS_SHEET_NAME}' not found" in streamlit(error):
+        if f"Worksheet name '{TRANSACTIONS_SHEET_NAME}' not found"  in str(error):
             raise ValueError(f"Sheet not found. '{TRANSACTIONS_SHEET_NAME} is not among Excel file sheets'")
         else:
             raise ValueError(f"Error while reading '{TRANSACTIONS_SHEET_NAME}': {error}")
