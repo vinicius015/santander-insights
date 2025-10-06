@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.api import companies, transactions, sectors, dashboard, ai, forecast
+from app.api import companies, transactions, sectors, dashboard, ai, forecast, graph
 from app.services.data_store import data_store
 
 
@@ -21,3 +21,4 @@ app.include_router(sectors.router)
 app.include_router(dashboard.router)
 app.include_router(ai.router)
 app.include_router(forecast.router)
+app.include_router(graph.router)
