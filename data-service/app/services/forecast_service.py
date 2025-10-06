@@ -13,7 +13,7 @@ def _prever_fluxo_caixa(hist_df, coluna, n_meses):
         model = LinearRegression().fit(x, y)
         future_x = pd.Series(range(len(hist_df), len(hist_df) + n_meses)).values.reshape(-1, 1)
         future = model.predict(future_x).flatten()
-    future_dates = pd.date_range(hist_df['ano_mes'].max(), periods=n_meses+1, freq='M')[1:]
+    future_dates = pd.date_range(hist_df['ano_mes'].max(), periods=n_meses+1, freq='ME')[1:]
     future_dates = future_dates.strftime('%Y-%m')
     return pd.DataFrame({'ano_mes': future_dates, coluna: future})
 
