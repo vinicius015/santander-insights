@@ -3,6 +3,80 @@ import numpy
 from sklearn.cluster import KMeans
 from sklearn.discriminant_analysis import StandardScaler
 from sklearn.linear_model import LinearRegression
+from app.services.data_store import data_store
+
+def get_company_ids_service():
+    profiles_df = data_store.all_companies_profiles
+    ids = sorted(profiles_df["id"].unique())
+    return {"company_ids": ids}
+
+def get_company_details_service(company_id: str):
+    profiles_df = data_store.all_companies_profiles
+    transactions_df = data_store.transactions_df
+
+    if company_id not in profiles_df["id"].values:
+        return None
+    profile = profiles_df[profiles_df["id"] == company_id].iloc[0]
+    sector = profile["ds_cnae"]
+
+    sector_profiles = profiles_df[profiles_df["ds_cnae"] == sector]
+    sector_means = sector_profiles[["receita_media_6m", "margem_media_6m"]].mean()
+
+    kpis = {
+        "moment": profile["momento"],
+        "average_margin_6m": profile["margem_media_6m"]
+    }
+
+    benchmarking = {
+        "company_average_revenue_6m": profile["receita_media_6m"],
+        "sector_average_revenue_6m": sector_means["receita_media_6m"],
+        "company_average_margin_6m": profile["margem_media_6m"],
+        "sector_average_margin_6m": sector_means["margem_media_6m"]
+    }
+
+    monthly_cashflow = create_monthly_cashflow_summary(transactions_df)
+    hist_id = monthly_cashflow[monthly_cashflow["id"] == company_id].sort_values("ano_mes")
+    if not hist_id.empty:
+        history = hist_id[["ano_mes", "receita", "despesa", "fluxo_liq"]].rename(columns={"ano_mes": "date"}).to_dict(orient="records")
+        def linear_trend(col):
+            s = hist_id[col]
+            if len(s) < 2:
+                return 0
+            x = numpy.arange(len(s)).reshape(-1, 1)
+            y = s.values.reshape(-1, 1)
+            model = LinearRegression().fit(x, y)
+            return float(model.coef_[0][0])
+        cashflow_trends = {
+            "receita": linear_trend("receita"),
+            "despesa": linear_trend("despesa"),
+            "fluxo_liq": linear_trend("fluxo_liq")
+        }
+    else:
+        history = []
+        cashflow_trends = {"receita": 0, "despesa": 0, "fluxo_liq": 0}
+
+    revenue_mix = (transactions_df[transactions_df["id_rcbe"] == company_id]
+                   .groupby("ds_tran")["vl"].sum().sort_values(ascending=False).reset_index())
+    total_revenue = revenue_mix["vl"].sum()
+    revenue_mix["percentage"] = (revenue_mix["vl"] / total_revenue * 100) if total_revenue > 0 else 0
+    revenue_distribution = revenue_mix.to_dict(orient="records")
+
+    expense_mix = (transactions_df[transactions_df["id_pgto"] == company_id]
+                   .groupby("ds_tran")["vl"].sum().sort_values(ascending=False).reset_index())
+    total_expense = expense_mix["vl"].sum()
+    expense_mix["percentage"] = (expense_mix["vl"] / total_expense * 100) if total_expense > 0 else 0
+    expense_distribution = expense_mix.to_dict(orient="records")
+
+    return {
+        "company_id": company_id,
+        "sector": sector,
+        "kpis": kpis,
+        "benchmarking": benchmarking,
+        "history": history,
+        "cashflow_trends": cashflow_trends,
+        "revenue_distribution": revenue_distribution,
+        "expense_distribution": expense_distribution
+    }
 
 def segment_companies_by_moment(monthly_cashflow_df, companies_df):
     company_profiles = _create_company_profiles(monthly_cashflow_df, companies_df)
