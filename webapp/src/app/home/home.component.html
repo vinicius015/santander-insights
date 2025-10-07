@@ -1,0 +1,246 @@
+<!-- Santander Layout -->
+<div class="santander-container">
+  
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="santander-logo">S</div>
+        <div class="brand-text">
+          <h3>Santander</h3>
+          <p>Business Intelligence</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+          </svg>
+        </div>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <span>Momento da Empresa</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+          </svg>
+        </div>
+        <span>Cadeia de Valor</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          </svg>
+        </div>
+        <span>Previsão de Caixa</span>
+      </a>
+    </nav>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    
+    <!-- Header -->
+    <div class="content-header">
+      <div class="header-content">
+        <h1>Análise de Perfil das Empresas</h1>
+        <p class="header-subtitle">Visão analítica completa do universo empresarial</p>
+      </div>
+      <div class="header-actions">
+        <button class="action-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm3-4H7v-2h8v2zm0-4H7V7h8v2z"/>
+          </svg>
+          Relatório
+        </button>
+        <button class="action-btn primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+          Exportar
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <p>Carregando dados...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button (click)="loadDashboardData()" class="retry-btn">Tentar Novamente</button>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="dashboardData && !loading" class="dashboard-content">
+  
+      <!-- KPI Cards -->
+      <div class="kpi-cards">
+        <div class="kpi-card">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10z"/>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <h3>Total de Empresas</h3>
+            <div class="value">{{ formatNumber(dashboardData.kpis.total_companies) }}</div>
+            <div class="description">Empresas no portfólio</div>
+          </div>
+        </div>
+        
+        <div class="kpi-card">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <h3>Momento Predominante</h3>
+            <div class="value">{{ dashboardData.kpis.predominant_moment.moment }}</div>
+            <div class="description">{{ dashboardData.kpis.predominant_moment.percentage }}% do total</div>
+          </div>
+        </div>
+        
+        <div class="kpi-card">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <h3>Saldo Médio</h3>
+            <div class="value">{{ formatCurrency(dashboardData.kpis.average_balance) }}</div>
+            <div class="description">Por empresa no portfólio</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Segmentation Filter -->
+      <div class="filter-card">
+        <div class="filter-header">
+          <h3>Filtros de Análise</h3>
+          <div class="filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-body">
+          <label class="filter-label">Setor Empresarial (CNAE)</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="selectedSector" (change)="onSectorChange()" class="modern-select">
+              <option value="Todos os Setores">Todos os setores</option>
+              <option *ngFor="let sector of sectors" [value]="sector.sector">{{ sector.sector }}</option>
+            </select>
+            <div class="select-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Charts Section -->
+      <div class="charts-section">
+        <h2>Visão Geral do Universo de Empresas</h2>
+        
+        <div class="charts-grid">
+          
+          <!-- Distribution Chart -->
+          <div class="chart-card full-width horizontal-bar">
+            <h3>Distribuição por Momento</h3>
+            <div class="chart-wrapper">
+              <canvas 
+                baseChart
+                [data]="momentChartData"
+                [options]="momentChartOptions"
+                [type]="momentChartType">
+              </canvas>
+            </div>
+          </div>
+          
+          <!-- Scatter Plot -->
+          <div class="chart-card full-width">
+            <h3>Clusters de Receita vs. Despesas</h3>
+            <div class="chart-wrapper">
+              <canvas 
+                baseChart
+                [data]="scatterChartData"
+                [options]="scatterChartOptions"
+                [type]="scatterChartType">
+              </canvas>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Specific Analysis -->
+      <div class="analysis-section">
+        <h2>Análises Específicas</h2>
+        
+        <div class="analysis-grid">
+          
+          <!-- Maturity Analysis -->
+          <div class="chart-card">
+            <h3>Receita Média por Nível de Maturidade da Empresa</h3>
+            <div class="chart-wrapper">
+              <canvas 
+                baseChart
+                [data]="maturityChartData"
+                [options]="maturityChartOptions"
+                [type]="maturityChartType">
+              </canvas>
+            </div>
+          </div>
+
+          <!-- Transaction Analysis -->
+          <div class="chart-card pie-chart">
+            <h3>Distribuição do Valor Total por Tipo de Transação (Top 10)</h3>
+            <div class="chart-wrapper">
+              <canvas 
+                baseChart
+                [data]="transactionChartData"
+                [options]="transactionChartOptions"
+                [type]="transactionChartType">
+              </canvas>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Sector Comparison -->
+      <div class="sector-section">
+        <h2>Top 15 Setores por Receita Total</h2>
+        <div class="chart-card full-width horizontal-bar">
+          <div class="chart-wrapper">
+            <canvas 
+              baseChart
+              [data]="sectorChartData"
+              [options]="sectorChartOptions"
+              [type]="sectorChartType">
+            </canvas>
+          </div>
+        </div>
+      </div>
+    
+    </div>
+  </div>
+</div>
