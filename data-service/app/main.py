@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api import companies, transactions, sectors, dashboard, ai, forecast, graph
 from app.services.data_store import data_store
 
@@ -14,6 +15,14 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan= lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(companies.router)
 app.include_router(transactions.router)
