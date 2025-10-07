@@ -1,0 +1,368 @@
+/* Import shared styles */
+@import '../home/home.component.css';
+
+/* Section Titles - Dashboard Style */
+.ai-section h2,
+.overview-section h2,
+.benchmarking-section h2,
+.trends-section h2,
+.distribution-section h2 {
+  margin-bottom: 24px;
+  color: #1a1a1a;
+  font-size: 22px;
+  font-weight: 600;
+  position: relative;
+  padding-left: 16px;
+}
+
+.ai-section h2::before,
+.overview-section h2::before,
+.benchmarking-section h2::before,
+.trends-section h2::before,
+.distribution-section h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(180deg, #d32f2f 0%, #ff6b6b 100%);
+  border-radius: 2px;
+}
+
+/* AI Diagnosis Section */
+.ai-section {
+  margin-bottom: 56px;
+}
+
+.ai-summary {
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #2c2c2c;
+}
+
+.ai-summary:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+/* Company Selection */
+.selection-section {
+  margin-bottom: 36px;
+}
+
+/* Overview Section */
+.overview-section {
+  margin-bottom: 56px;
+}
+
+.moment-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+}
+
+.moment-início {
+  background-color: #ffcdd2;
+  color: #c62828;
+}
+
+.moment-crescimento {
+  background-color: #ef5350;
+  color: #ffffff;
+}
+
+.moment-maturidade {
+  background-color: #d32f2f;
+  color: #ffffff;
+}
+
+.moment-declínio {
+  background-color: #b71c1c;
+  color: #ffffff;
+}
+
+.sector-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #424242;
+  text-transform: capitalize;
+}
+
+/* Benchmarking Section */
+.benchmarking-section {
+  margin-bottom: 56px;
+}
+
+.benchmark-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.benchmark-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8eaed;
+  transition: all 0.3s ease;
+}
+
+.benchmark-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.benchmark-header h3 {
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.benchmark-values {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.main-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.delta {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delta.positive {
+  color: #2e7d32;
+}
+
+.delta.negative {
+  color: #d32f2f;
+}
+
+.delta.positive::before {
+  content: "↗";
+  color: #2e7d32;
+}
+
+.delta.negative::before {
+  content: "↘";
+  color: #d32f2f;
+}
+
+.benchmark-caption {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* Trends Section */
+.trends-section {
+  margin-bottom: 56px;
+}
+
+/* Distribution Section */
+.distribution-section {
+  margin-bottom: 56px;
+}
+
+.distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+  gap: 36px;
+  margin-top: 24px;
+}
+
+/* Loading Spinner */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e8eaed;
+  border-top: 4px solid #d32f2f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 18px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.retry-btn {
+  background: #d32f2f;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #c62828;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .benchmark-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .distribution-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .benchmark-card {
+    padding: 20px;
+  }
+  
+  .main-value {
+    font-size: 24px;
+  }
+  
+  .delta {
+    font-size: 16px;
+  }
+  
+  .ai-summary {
+    padding: 16px;
+    font-size: 14px;
+  }
+}
+
+/* Chart-specific adjustments */
+.trends-section .chart-card {
+  min-height: 450px;
+  height: auto;
+}
+
+/* Optimize cashflow chart container for crisp rendering */
+.trends-section .chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  flex: 1;
+}
+
+.trends-section .chart-wrapper canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Ensure crisp chart rendering and prevent flattening */
+.trends-section .chart-card {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.trends-section .chart-card:hover {
+  transform: none; /* Disable any transform on hover */
+}
+
+/* Force proper canvas dimensions */
+.trends-section .chart-card .chart-wrapper {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* Prevent canvas from being squashed */
+.trends-section canvas[baseChart] {
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 350px !important;
+}
+
+.distribution-grid .chart-card {
+  min-height: 350px;
+}
+
+/* Prevent chart container resizing issues */
+.distribution-grid .chart-card .chart-wrapper {
+  min-height: 300px;
+  max-height: 300px;
+  position: relative;
+  overflow: visible;
+}
+
+.distribution-grid .chart-card canvas {
+  max-width: 100% !important;
+  max-height: 280px !important;
+  position: static !important;
+}
+
+/* Sample data notice */
+.sample-data-notice {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 1px solid #ffcc02;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.sample-data-notice p {
+  margin: 0;
+  color: #e65100;
+  font-size: 14px;
+  font-weight: 500;
+}

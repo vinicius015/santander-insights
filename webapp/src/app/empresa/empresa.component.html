@@ -1,0 +1,264 @@
+<!-- Santander Layout -->
+<div class="santander-container">
+  
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="santander-logo">S</div>
+        <div class="brand-text">
+          <h3>Santander</h3>
+          <p>Business Intelligence</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+          </svg>
+        </div>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/empresa" class="nav-item active">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <span>Momento da Empresa</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+          </svg>
+        </div>
+        <span>Cadeia de Valor</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          </svg>
+        </div>
+        <span>Previsão de Caixa</span>
+      </a>
+    </nav>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    
+    <!-- Header -->
+    <div class="content-header">
+      <div class="header-content">
+        <h1>Diagnóstico Individual e Benchmarking Competitivo</h1>
+        <p class="header-subtitle">Análise detalhada do momento da empresa selecionada</p>
+      </div>
+      <div class="header-actions">
+        <button class="action-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm3-4H7v-2h8v2zm0-4H7V7h8v2z"/>
+          </svg>
+          Relatório
+        </button>
+        <button class="action-btn primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+          Exportar
+        </button>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button (click)="loadCompanyIds()" class="retry-btn">Tentar Novamente</button>
+    </div>
+
+    <!-- Company Selection -->
+    <div *ngIf="companyIds.length > 0" class="selection-section">
+      <div class="filter-card">
+        <div class="filter-header">
+          <h3>Seleção de Empresa</h3>
+          <div class="filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-body">
+          <label class="filter-label">Selecione a empresa para análise:</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="selectedCompanyId" (change)="onCompanyChange()" class="modern-select">
+              <option value="">Selecione uma Empresa</option>
+              <option *ngFor="let id of companyIds" [value]="id">{{ id }}</option>
+            </select>
+            <div class="select-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading && selectedCompanyId" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Carregando dados da empresa...</p>
+    </div>
+
+    <!-- Company Analysis Content -->
+    <div *ngIf="companyAnalysis && !loading" class="empresa-content">
+
+      <!-- AI Diagnosis Section -->
+      <div *ngIf="companyAnalysis.ai_diagnosis" class="ai-section">
+        <h2>Diagnóstico do Analista Virtual</h2>
+        <div class="ai-summary">
+          <p>{{ companyAnalysis.ai_diagnosis }}</p>
+        </div>
+      </div>
+
+      <!-- Company Overview -->
+      <div class="overview-section">
+        <h2>Visão Geral Detalhada: {{ selectedCompanyId }}</h2>
+        
+        <div class="kpi-cards">
+          <div class="kpi-card">
+            <div class="kpi-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <h3>Momento da Empresa (via ML)</h3>
+              <div class="value moment-badge" [class]="'moment-' + companyAnalysis.profile.momento.toLowerCase()">
+                {{ companyAnalysis.profile.momento }}
+              </div>
+              <div class="description">Classificação por Machine Learning</div>
+            </div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <h3>Margem Média (6m)</h3>
+              <div class="value">{{ formatPercentage(companyAnalysis.profile.margem_media_6m) }}</div>
+              <div class="description">Rentabilidade dos últimos 6 meses</div>
+            </div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <h3>Setor CNAE</h3>
+              <div class="value sector-name">{{ companyAnalysis.profile.ds_cnae }}</div>
+              <div class="description">Classificação do segmento</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Benchmarking Section -->
+      <div class="benchmarking-section">
+        <h2>Benchmarking Competitivo (vs. Setor: {{ companyAnalysis.profile.ds_cnae }})</h2>
+        
+        <div class="benchmark-cards">
+          <div class="benchmark-card">
+            <div class="benchmark-header">
+              <h3>Receita Média da Empresa vs. Média do Setor</h3>
+            </div>
+            <div class="benchmark-values">
+              <div class="main-value">{{ formatCurrency(companyAnalysis.profile.receita_media_6m) }}</div>
+              <div class="delta" [class]="getDelta(companyAnalysis.profile.receita_media_6m, companyAnalysis.sector_benchmark.receita_media_6m) >= 0 ? 'positive' : 'negative'">
+                {{ getDelta(companyAnalysis.profile.receita_media_6m, companyAnalysis.sector_benchmark.receita_media_6m) >= 0 ? '+' : '' }}{{ formatCurrency(getDelta(companyAnalysis.profile.receita_media_6m, companyAnalysis.sector_benchmark.receita_media_6m)) }}
+              </div>
+              <div class="benchmark-caption">
+                Média do setor: {{ formatCurrency(companyAnalysis.sector_benchmark.receita_media_6m) }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="benchmark-card">
+            <div class="benchmark-header">
+              <h3>Margem Média da Empresa vs. Média do Setor</h3>
+            </div>
+            <div class="benchmark-values">
+              <div class="main-value">{{ formatPercentage(companyAnalysis.profile.margem_media_6m) }}</div>
+              <div class="delta" [class]="getDeltaPercentage(companyAnalysis.profile.margem_media_6m, companyAnalysis.sector_benchmark.margem_media_6m) >= 0 ? 'positive' : 'negative'">
+                {{ getDeltaPercentage(companyAnalysis.profile.margem_media_6m, companyAnalysis.sector_benchmark.margem_media_6m) >= 0 ? '+' : '' }}{{ formatPercentage(getDeltaPercentage(companyAnalysis.profile.margem_media_6m, companyAnalysis.sector_benchmark.margem_media_6m)) }}
+              </div>
+              <div class="benchmark-caption">
+                Média do setor: {{ formatPercentage(companyAnalysis.sector_benchmark.margem_media_6m) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cashflow Trends Analysis -->
+      <div class="trends-section">
+        <h2>Análise de Tendências do Fluxo de Caixa</h2>
+        <div class="chart-card full-width">
+          <div *ngIf="!companyAnalysis?.cashflow_history || companyAnalysis.cashflow_history.length === 0" class="sample-data-notice">
+            <p><em>* Dados de exemplo sendo exibidos enquanto processamos os dados reais da empresa</em></p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas 
+              baseChart
+              [data]="cashflowChartData"
+              [options]="cashflowChartOptions"
+              [type]="cashflowChartType">
+            </canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue and Expense Distribution -->
+      <div class="distribution-section">
+        <h2>Composição Detalhada de Receitas e Despesas</h2>
+        
+        <div class="distribution-grid">
+          <div class="chart-card">
+            <h3>Distribuição de Receitas por Origem</h3>
+            <div class="chart-wrapper">
+              <canvas 
+                baseChart
+                [data]="revenueChartData"
+                [options]="revenueChartOptions"
+                [type]="revenueChartType">
+              </canvas>
+            </div>
+          </div>
+          
+          <div class="chart-card">
+            <h3>Distribuição de Despesas por Categoria</h3>
+            <div class="chart-wrapper">
+              <canvas 
+                baseChart
+                [data]="expenseChartData"
+                [options]="expenseChartOptions"
+                [type]="expenseChartType">
+              </canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    </div>
+  </div>
+</div>

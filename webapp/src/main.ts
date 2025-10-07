@@ -15,6 +15,7 @@ import {
   ArcElement,
   ScatterController,
   BarController,
+  LineController,
   PieController
 } from 'chart.js';
 
@@ -30,6 +31,7 @@ Chart.register(
   ArcElement,
   ScatterController,
   BarController,
+  LineController,
   PieController
 );
 
