@@ -136,6 +136,31 @@ export interface CompanyAnalysis {
   ai_diagnosis?: string;
 }
 
+export interface ForecastData {
+  kpis: {
+    total_receita_prevista: number;
+    total_despesa_prevista: number;
+    total_fluxo_previsto: number;
+  };
+  historico: {
+    ano_mes: string;
+    receita: number;
+    despesa: number;
+    fluxo_liq: number;
+  }[];
+  previsao: {
+    ano_mes: string;
+    receita: number;
+    despesa: number;
+    fluxo_liq: number;
+  }[];
+}
+
+export interface ForecastAnalysis {
+  forecast_data: ForecastData;
+  ai_analysis?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -208,6 +233,32 @@ export class DataService {
         })),
         ai_diagnosis: diagnosis.diagnosis
         } as CompanyAnalysis;
+      })
+    );
+  }
+
+  getForecastData(companyId: string, nMonths: number): Observable<ForecastData> {
+    const params = new HttpParams().set('n_months', nMonths.toString());
+    return this.http.get<ForecastData>(`${this.baseUrl}/forecast/${companyId}`, { params });
+  }
+
+  getForecastAIAnalysis(companyId: string, nMonths: number): Observable<{analysis: string}> {
+    const params = new HttpParams().set('n_months', nMonths.toString());
+    return this.http.get<{analysis: string}>(`${this.baseUrl}/ai/forecast/${companyId}`, { params });
+  }
+
+  getForecastAnalysis(companyId: string, nMonths: number): Observable<ForecastAnalysis> {
+    return forkJoin({
+      forecast: this.getForecastData(companyId, nMonths),
+      aiAnalysis: this.getForecastAIAnalysis(companyId, nMonths)
+    }).pipe(
+      map(({forecast, aiAnalysis}) => {
+        console.log('Raw forecast from API:', forecast);
+        console.log('Raw AI analysis from API:', aiAnalysis);
+        return {
+          forecast_data: forecast,
+          ai_analysis: aiAnalysis.analysis
+        } as ForecastAnalysis;
       })
     );
   }

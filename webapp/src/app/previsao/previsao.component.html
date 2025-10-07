@@ -1,0 +1,304 @@
+<!-- Santander Layout -->
+<div class="santander-container">
+  
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="santander-logo">S</div>
+        <div class="brand-text">
+          <h3>Santander</h3>
+          <p>Business Intelligence</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+          </svg>
+        </div>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/empresa" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <span>Momento da Empresa</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+          </svg>
+        </div>
+        <span>Cadeia de Valor</span>
+      </a>
+      <a routerLink="/previsao" class="nav-item active">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          </svg>
+        </div>
+        <span>Previsão de Caixa</span>
+      </a>
+    </nav>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    
+    <!-- Header -->
+    <div class="content-header">
+      <div class="header-content">
+        <h1>Previsão de Fluxo de Caixa e Recomendações Estratégicas</h1>
+        <p class="header-subtitle">Projeções futuras de receitas, despesas e recomendações de produtos financeiros</p>
+      </div>
+      <div class="header-actions">
+        <button class="action-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm3-4H7v-2h8v2zm0-4H7V7h8v2z"/>
+          </svg>
+          Relatório
+        </button>
+        <button class="action-btn primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+          Exportar
+        </button>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button (click)="loadCompanyIds()" class="retry-btn">Tentar Novamente</button>
+    </div>
+
+    <!-- Company and Parameters Selection -->
+    <div *ngIf="companyIds.length > 0" class="selection-section">
+      <div class="filter-card">
+        <div class="filter-header">
+          <h3>Configuração da Previsão</h3>
+          <div class="filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-body">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label class="filter-label">Selecione a empresa para previsão:</label>
+              <div class="select-wrapper">
+                <select [(ngModel)]="selectedCompanyId" (change)="onSelectionChange()" class="modern-select">
+                  <option value="">Selecione uma Empresa</option>
+                  <option *ngFor="let id of companyIds" [value]="id">{{ id }}</option>
+                </select>
+                <div class="select-arrow">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="filter-group">
+              <label class="filter-label">Período de previsão (meses):</label>
+              <div class="select-wrapper">
+                <select [(ngModel)]="selectedMonths" (change)="onSelectionChange()" class="modern-select">
+                  <option [value]="3">3 meses</option>
+                  <option [value]="6">6 meses</option>
+                  <option [value]="12">12 meses</option>
+                  <option [value]="18">18 meses</option>
+                  <option [value]="24">24 meses</option>
+                </select>
+                <div class="select-arrow">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading && selectedCompanyId" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Processando previsão financeira...</p>
+    </div>
+
+    <!-- Forecast Analysis Content -->
+    <div *ngIf="forecastAnalysis && !loading" class="previsao-content">
+
+      <!-- AI Analysis Section -->
+      <div *ngIf="forecastAnalysis.ai_analysis" class="ai-section">
+        <h2>Recomendação Estratégica do Analista Virtual</h2>
+        <div class="ai-summary">
+          <p>{{ forecastAnalysis.ai_analysis }}</p>
+        </div>
+      </div>
+
+      <!-- KPIs Overview -->
+      <div class="kpis-section">
+        <h2>Resumo Executivo da Previsão: {{ selectedCompanyId }}</h2>
+        
+        <div class="kpi-cards">
+          <div class="kpi-card">
+            <div class="kpi-icon revenue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <h3>Receita Total Prevista</h3>
+              <div class="value">{{ formatCurrency(forecastAnalysis.forecast_data.kpis.total_receita_prevista) }}</div>
+              <div class="description">Próximos {{ selectedMonths }} meses</div>
+            </div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-icon expense">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <h3>Despesa Total Prevista</h3>
+              <div class="value">{{ formatCurrency(forecastAnalysis.forecast_data.kpis.total_despesa_prevista) }}</div>
+              <div class="description">Próximos {{ selectedMonths }} meses</div>
+            </div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-icon" [class]="forecastAnalysis.forecast_data.kpis.total_fluxo_previsto >= 0 ? 'positive' : 'negative'">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <h3>Fluxo de Caixa Líquido</h3>
+              <div class="value" [class]="forecastAnalysis.forecast_data.kpis.total_fluxo_previsto >= 0 ? 'positive' : 'negative'">
+                {{ formatCurrency(forecastAnalysis.forecast_data.kpis.total_fluxo_previsto) }}
+              </div>
+              <div class="description">
+                {{ forecastAnalysis.forecast_data.kpis.total_fluxo_previsto >= 0 ? 'Superávit projetado' : 'Déficit projetado' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forecast Chart -->
+      <div class="forecast-section">
+        <h2>Projeção de Fluxo de Caixa</h2>
+        <div class="chart-card full-width">
+          <div *ngIf="!forecastAnalysis?.forecast_data?.historico || forecastAnalysis.forecast_data.historico.length === 0" class="sample-data-notice">
+            <p><em>* Dados de exemplo sendo exibidos enquanto processamos os dados reais da empresa</em></p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas 
+              baseChart
+              [data]="forecastChartData"
+              [options]="forecastChartOptions"
+              [type]="forecastChartType">
+            </canvas>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-line historical"></span>
+              <span>Dados Históricos</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line forecast"></span>
+              <span>Previsão ({{ selectedMonths }} meses)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forecast Details -->
+      <div class="details-section">
+        <h2>Análise Detalhada da Previsão</h2>
+        
+        <div class="details-grid">
+          <div class="detail-card">
+            <div class="detail-header">
+              <h3>Tendência de Receita</h3>
+              <div class="trend-icon positive">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="detail-content">
+              <div class="metric">
+                <span class="label">Receita Média Mensal Prevista:</span>
+                <span class="value">{{ formatCurrency(forecastAnalysis.forecast_data.kpis.total_receita_prevista / selectedMonths) }}</span>
+              </div>
+              <div class="insight">
+                <p>Baseado no histórico, a receita apresenta tendência de crescimento consistente para o período projetado.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-card">
+            <div class="detail-header">
+              <h3>Gestão de Despesas</h3>
+              <div class="trend-icon neutral">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="detail-content">
+              <div class="metric">
+                <span class="label">Despesa Média Mensal Prevista:</span>
+                <span class="value">{{ formatCurrency(forecastAnalysis.forecast_data.kpis.total_despesa_prevista / selectedMonths) }}</span>
+              </div>
+              <div class="insight">
+                <p>As despesas seguem padrão operacional estável, com crescimento controlado alinhado ao negócio.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-card">
+            <div class="detail-header">
+              <h3>Margem Operacional</h3>
+              <div class="trend-icon" [class]="forecastAnalysis.forecast_data.kpis.total_fluxo_previsto >= 0 ? 'positive' : 'negative'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" *ngIf="forecastAnalysis.forecast_data.kpis.total_fluxo_previsto >= 0"/>
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" *ngIf="forecastAnalysis.forecast_data.kpis.total_fluxo_previsto < 0"/>
+                </svg>
+              </div>
+            </div>
+            <div class="detail-content">
+              <div class="metric">
+                <span class="label">Margem Projetada:</span>
+                <span class="value" [class]="forecastAnalysis.forecast_data.kpis.total_fluxo_previsto >= 0 ? 'positive' : 'negative'">
+                  {{ formatPercentage(forecastAnalysis.forecast_data.kpis.total_fluxo_previsto / forecastAnalysis.forecast_data.kpis.total_receita_prevista) }}
+                </span>
+              </div>
+              <div class="insight">
+                <p>
+                  {{ forecastAnalysis.forecast_data.kpis.total_fluxo_previsto >= 0 ? 
+                     'Empresa mantém rentabilidade saudável no período projetado.' : 
+                     'Atenção: margem negativa indica necessidade de ajustes operacionais.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
