@@ -1,0 +1,414 @@
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { DataService, GraphData, GraphNode, GraphLink } from '../services/data.service';
+import * as d3 from 'd3';
+
+@Component({
+  selector: 'app-cadeia',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './cadeia.component.html',
+  styleUrls: ['./cadeia.component.css'],
+  encapsulation: ViewEncapsulation.None
+})
+export class CadeiaComponent implements OnInit {
+  loading = false;
+  error: string | null = null;
+  
+  // Lista de empresas
+  companyIds: string[] = [];
+  selectedCompanyId: string = '';
+  
+  // Dados de análise
+  ecosystemSummary: string = '';
+  companyAnalysis: string = '';
+
+  // Configurações de visualização
+  analysisView: 'ecosystem' | 'company' = 'ecosystem';
+  graphNodes: any[] = [];
+  graphEdges: any[] = [];
+  criticalDependencies: any[] = [];
+  threshold: number = 0.7; // 70%
+  limit: number = 200;
+  
+  // D3 Visualization properties
+  private svg: any;
+  private width = 1000;
+  private height = 700;
+  private color: any;
+  private simulation: any;
+  private link: any;
+  private node: any;
+  private zoom: any;
+  private tooltip: any;
+
+  constructor(private dataService: DataService) {}
+
+  ngOnInit(): void {
+    this.loadCompanyIds();
+    this.setupGraph();
+  }
+
+  // Carrega a lista de IDs de empresas
+  loadCompanyIds(): void {
+    this.loading = true;
+    this.dataService.getCompanyIds().subscribe({
+      next: (ids: string[]) => {
+        this.companyIds = ids.sort();
+        this.loading = false;
+        if (this.companyIds.length > 0) {
+          // Default: análise de ecossistema
+          this.loadEcosystemGraph();
+        }
+      },
+      error: (error: any) => {
+        this.error = 'Erro ao carregar lista de empresas';
+        this.loading = false;
+        console.error('Error loading company IDs:', error);
+      }
+    });
+  }
+
+  // Mudança de visualização
+  changeView(view: 'ecosystem' | 'company'): void {
+    this.analysisView = view;
+    if (view === 'ecosystem') {
+      this.loadEcosystemGraph();
+    } else if (this.selectedCompanyId) {
+      this.loadCompanyGraph();
+    }
+  }
+
+  // Mudança de empresa selecionada
+  onCompanyChange(): void {
+    if (this.selectedCompanyId) {
+      this.loadCompanyGraph();
+    }
+  }
+
+  // Carrega o grafo de ecossistema
+  loadEcosystemGraph(): void {
+    this.loading = true;
+    this.error = null;
+    
+    // Carregar dados do grafo
+    this.dataService.getEcosystemAnalysis().subscribe({
+      next: (data) => {
+        if (data.graph_data) {
+          this.graphNodes = data.graph_data.nodes || [];
+          this.graphEdges = data.graph_data.links || [];
+        }
+        
+        if (data.ai_summary) {
+          this.ecosystemSummary = data.ai_summary;
+        }
+        
+        // Renderizar o grafo com os dados obtidos
+        this.renderGraph(this.graphNodes, this.graphEdges);
+        this.loading = false;
+      },
+      error: (error: Error) => {
+        this.error = 'Erro ao carregar dados do grafo';
+        this.loading = false;
+        console.error('Error loading graph data:', error);
+      }
+    });
+  }
+
+  // Carrega o grafo de uma empresa específica
+  loadCompanyGraph(): void {
+    if (!this.selectedCompanyId) return;
+    
+    this.loading = true;
+    this.error = null;
+    
+    // Carregar vizinhança da empresa
+    this.dataService.getCompanyNetworkAnalysis(this.selectedCompanyId).subscribe({
+      next: (data) => {
+        if (data.graph_data) {
+          this.graphNodes = data.graph_data.nodes || [];
+          this.graphEdges = data.graph_data.links || [];
+        }
+        
+        if (data.ai_analysis) {
+          this.companyAnalysis = data.ai_analysis;
+        }
+        
+        // Renderizar o grafo da empresa
+        this.renderCompanyGraph(this.graphNodes, this.graphEdges, this.selectedCompanyId);
+        this.loading = false;
+      },
+      error: (error: Error) => {
+        this.error = 'Erro ao carregar dados da empresa';
+        this.loading = false;
+        console.error('Error loading company data:', error);
+      }
+    });
+  }
+
+  // Configuração inicial do gráfico
+  private setupGraph(): void {
+    this.color = d3.scaleOrdinal(d3.schemeCategory10);
+    
+    this.zoom = d3.zoom()
+      .scaleExtent([0.1, 10])
+      .on('zoom', (event) => {
+        const transform = event.transform;
+        d3.select('g.graph-container').attr('transform', transform);
+      });
+      
+    // Criar tooltip
+    this.tooltip = d3.select('body').append('div')
+      .attr('class', 'graph-tooltip')
+      .style('opacity', 0);
+  }
+
+  // Limpa o gráfico
+  private clearGraph(): void {
+    d3.select('#graph-container').selectAll('*').remove();
+  }
+
+  // Renderiza o gráfico de ecossistema
+  private renderGraph(nodes: any[], links: any[]): void {
+    this.clearGraph();
+    
+    // Configuração básica do SVG
+    this.svg = d3.select('#graph-container')
+      .append('svg')
+      .attr('width', '100%')
+      .attr('height', this.height)
+      .attr('viewBox', [0, 0, this.width, this.height])
+      .call(this.zoom as any);
+    
+    const g = this.svg.append('g').attr('class', 'graph-container');
+    
+    // Preparar dados para D3
+    const nodeMap = new Map(nodes.map(d => [d.id, d]));
+    const linksData = links.map(d => ({
+      source: nodeMap.get(d.source) || d.source,
+      target: nodeMap.get(d.target) || d.target,
+      value: d.value
+    }));
+    
+    // Criar links
+    this.link = g.append('g')
+      .attr('class', 'links')
+      .selectAll('line')
+      .data(linksData)
+      .enter().append('line')
+      .attr('stroke-width', (d: any) => Math.sqrt(d.value) / 500 + 1)
+      .attr('stroke', '#999')
+      .attr('stroke-opacity', 0.6);
+    
+    // Criar nós
+    this.node = g.append('g')
+      .attr('class', 'nodes')
+      .selectAll('circle')
+      .data(nodes)
+      .enter().append('circle')
+      .attr('r', 5)
+      .attr('fill', (d: any) => this.color(d.id.charAt(0)))
+      .call(this.drag() as any)
+      .on('mouseover', (event: any, d: any) => {
+        this.tooltip.transition()
+          .duration(200)
+          .style('opacity', .9);
+        this.tooltip.html(d.id)
+          .style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 28) + 'px');
+      })
+      .on('mouseout', () => {
+        this.tooltip.transition()
+          .duration(500)
+          .style('opacity', 0);
+      })
+      .on('click', (event: any, d: any) => {
+        if (this.analysisView === 'ecosystem') {
+          this.selectedCompanyId = d.id;
+          this.analysisView = 'company';
+          this.loadCompanyGraph();
+        }
+      });
+    
+    // Iniciar simulação
+    this.simulation = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(linksData).id((d: any) => d.id).distance(100))
+      .force('charge', d3.forceManyBody().strength(-200))
+      .force('center', d3.forceCenter(this.width / 2, this.height / 2))
+      .force('x', d3.forceX(this.width / 2).strength(0.1))
+      .force('y', d3.forceY(this.height / 2).strength(0.1))
+      .on('tick', () => this.ticked());
+  }
+
+  // Renderiza o gráfico de uma empresa específica
+  private renderCompanyGraph(nodes: any[], links: any[], centralId: string): void {
+    this.clearGraph();
+    
+    // Configuração básica do SVG
+    this.svg = d3.select('#graph-container')
+      .append('svg')
+      .attr('width', '100%')
+      .attr('height', this.height)
+      .attr('viewBox', [0, 0, this.width, this.height])
+      .call(this.zoom as any);
+    
+    const g = this.svg.append('g').attr('class', 'graph-container');
+    
+    // Preparar dados para D3
+    const nodeMap = new Map(nodes.map(d => [d.id, d]));
+    const linksData = links.map(d => ({
+      source: nodeMap.get(d.source) || d.source,
+      target: nodeMap.get(d.target) || d.target,
+      value: d.value
+    }));
+    
+    // Cor baseada no tipo de nó (central, cliente, fornecedor)
+    const nodeColor = (d: any) => {
+      if (d.id === centralId) return '#ff4b4b'; // central
+      if (d.type === 'cliente') return '#28a745'; // cliente
+      if (d.type === 'fornecedor') return '#007bff'; // fornecedor
+      return '#666'; // outros
+    };
+    
+    // Tamanho baseado no tipo
+    const nodeSize = (d: any) => {
+      if (d.id === centralId) return 12;
+      return 6;
+    };
+    
+    // Criar links
+    this.link = g.append('g')
+      .attr('class', 'links')
+      .selectAll('line')
+      .data(linksData)
+      .enter().append('line')
+      .attr('stroke-width', 2)
+      .attr('stroke', (d: any) => {
+        // Cor diferente para cliente e fornecedor
+        if ((d.source as any).type === 'cliente') return '#28a745';
+        return '#007bff';
+      })
+      .attr('stroke-opacity', 0.6);
+    
+    // Criar nós
+    this.node = g.append('g')
+      .attr('class', 'nodes')
+      .selectAll('circle')
+      .data(nodes)
+      .enter().append('circle')
+      .attr('r', (d: any) => nodeSize(d))
+      .attr('fill', (d: any) => nodeColor(d))
+      .call(this.drag() as any)
+      .on('mouseover', (event: any, d: any) => {
+        this.tooltip.transition()
+          .duration(200)
+          .style('opacity', .9);
+        
+        let tipText = d.id;
+        if (d.id === centralId) tipText += ' (Empresa focal)';
+        else if (d.type === 'cliente') tipText += ' (Cliente)';
+        else if (d.type === 'fornecedor') tipText += ' (Fornecedor)';
+        
+        this.tooltip.html(tipText)
+          .style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 28) + 'px');
+      })
+      .on('mouseout', () => {
+        this.tooltip.transition()
+          .duration(500)
+          .style('opacity', 0);
+      });
+    
+    // Adicionar rótulos para nós
+    g.append('g')
+      .attr('class', 'labels')
+      .selectAll('text')
+      .data(nodes)
+      .enter().append('text')
+      .attr('dx', 12)
+      .attr('dy', '.35em')
+      .text((d: any) => d.id === centralId ? d.id : '')
+      .style('font-size', '12px')
+      .style('font-weight', 'bold')
+      .style('fill', '#333');
+    
+    // Iniciar simulação
+    this.simulation = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(linksData).id((d: any) => d.id).distance(100))
+      .force('charge', d3.forceManyBody().strength(-200))
+      .force('center', d3.forceCenter(this.width / 2, this.height / 2))
+      .force('x', d3.forceX(this.width / 2).strength(0.1))
+      .force('y', d3.forceY(this.height / 2).strength(0.1))
+      .on('tick', () => this.ticked());
+  }
+
+  // Atualiza posições no tick da simulação
+  private ticked(): void {
+    if (this.link) {
+      this.link
+        .attr('x1', (d: any) => d.source.x)
+        .attr('y1', (d: any) => d.source.y)
+        .attr('x2', (d: any) => d.target.x)
+        .attr('y2', (d: any) => d.target.y);
+    }
+    
+    if (this.node) {
+      this.node
+        .attr('cx', (d: any) => d.x)
+        .attr('cy', (d: any) => d.y);
+    }
+    
+    // Atualizar também as labels
+    d3.select('.labels').selectAll('text')
+      .attr('x', (d: any) => d.x)
+      .attr('y', (d: any) => d.y);
+  }
+
+  // Função para arrastar nós
+  private drag(): any {
+    const dragstarted = (event: any, d: any) => {
+      if (!event.active) this.simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    };
+
+    const dragged = (event: any, d: any) => {
+      d.fx = event.x;
+      d.fy = event.y;
+    };
+
+    const dragended = (event: any, d: any) => {
+      if (!event.active) this.simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    };
+
+    return d3.drag()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended);
+  }
+
+  // Formatar percentual
+  formatPercentage(value: number): string {
+    return (value * 100).toFixed(1) + '%';
+  }
+
+  // Alternar threshold
+  updateThreshold(value: number): void {
+    this.threshold = value;
+    if (this.analysisView === 'ecosystem') {
+      this.loadEcosystemGraph();
+    }
+  }
+
+  // Alternar limite
+  updateLimit(value: number): void {
+    this.limit = value;
+    if (this.analysisView === 'ecosystem') {
+      this.loadEcosystemGraph();
+    }
+  }
+}

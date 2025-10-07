@@ -1,0 +1,251 @@
+<!-- Santander Layout -->
+<div class="santander-container">
+  
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="santander-logo">S</div>
+        <div class="brand-text">
+          <h3>Santander</h3>
+          <p>Business Intelligence</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+          </svg>
+        </div>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/empresa" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <span>Momento da Empresa</span>
+      </a>
+      <a routerLink="/cadeia" class="nav-item active">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+          </svg>
+        </div>
+        <span>Cadeia de Valor</span>
+      </a>
+      <a routerLink="/previsao" class="nav-item">
+        <div class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          </svg>
+        </div>
+        <span>Previsão de Caixa</span>
+      </a>
+    </nav>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    
+    <!-- Header -->
+    <div class="content-header">
+      <div class="header-content">
+        <h1>Análise de Cadeia de Valor</h1>
+        <p class="header-subtitle">Visualize e analise as relações de interdependência entre empresas</p>
+      </div>
+      <!-- Header actions removed -->
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button (click)="loadCompanyIds()" class="retry-btn">Tentar Novamente</button>
+    </div>
+
+    <!-- View Selector & Company Selection Combined -->
+    <div class="view-selector-section">
+      <div class="filter-card">
+        <div class="filter-header">
+          <h3>Tipo de Análise</h3>
+          <div class="filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-body">
+          <div class="view-buttons">
+            <button 
+              [class.active]="analysisView === 'ecosystem'" 
+              (click)="changeView('ecosystem')"
+              class="view-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              Visão Macro do Ecossistema
+            </button>
+            <button 
+              [class.active]="analysisView === 'company'" 
+              (click)="changeView('company')"
+              class="view-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              Análise Individual da Empresa
+            </button>
+          </div>
+          
+          <!-- Company Selection (Only visible in company view) -->
+          <div *ngIf="analysisView === 'company'" class="company-selection" style="margin-top: 20px;">
+            <label class="filter-label">Selecione uma empresa para análise:</label>
+            <div class="select-wrapper">
+              <select [(ngModel)]="selectedCompanyId" (change)="onCompanyChange()" class="modern-select">
+                <option value="">Selecione uma Empresa</option>
+                <option *ngFor="let id of companyIds" [value]="id">{{ id }}</option>
+              </select>
+              <div class="select-arrow">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ecosystem Analysis Options -->
+    <div *ngIf="analysisView === 'ecosystem'" class="selection-section">
+      <div class="filter-card">
+        <div class="filter-header">
+          <h3>Parâmetros de Visualização</h3>
+          <div class="filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-body">
+          <div class="filter-row">
+            <label class="filter-label">Limiar de Dependência Crítica:</label>
+            <div class="range-slider">
+              <input type="range" min="0.3" max="0.9" step="0.1" [(ngModel)]="threshold" (change)="updateThreshold(threshold)">
+              <span>{{ formatPercentage(threshold) }}</span>
+            </div>
+          </div>
+          <div class="filter-row">
+            <label class="filter-label">Número de Conexões:</label>
+            <div class="range-slider">
+              <input type="range" min="50" max="300" step="50" [(ngModel)]="limit" (change)="updateLimit(limit)">
+              <span>{{ limit }}</span>
+            </div>
+          </div>
+          <div class="filter-row">
+            <label class="filter-label">Performance:</label>
+            <div class="performance-toggle">
+              <label class="toggle-label">
+                <input type="checkbox" [(ngModel)]="highPerformanceMode" (change)="togglePerformanceMode()">
+                <span class="toggle-text">Modo de alto desempenho</span>
+              </label>
+              <div class="toggle-hint">Recomendado para dispositivos com menor capacidade</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Content -->
+    <div class="cadeia-content">
+
+      <!-- AI Analysis Section -->
+      <div class="ai-section">
+        <h2>
+          <span *ngIf="analysisView === 'ecosystem'">Resumo Executivo do Analista Virtual</span>
+          <span *ngIf="analysisView === 'company'">Diagnóstico de Cadeia de Valor</span>
+        </h2>
+        <div class="ai-summary">
+          <p *ngIf="loading">Carregando análise...</p>
+          <p *ngIf="!loading && analysisView === 'ecosystem'">{{ ecosystemSummary }}</p>
+          <p *ngIf="!loading && analysisView === 'company'">{{ companyAnalysis }}</p>
+        </div>
+      </div>
+
+      <!-- Graph Visualization -->
+      <div class="graph-section">
+        <h2>
+          <span *ngIf="analysisView === 'ecosystem'">Visualização do Ecossistema e seus Clusters</span>
+          <span *ngIf="analysisView === 'company'">Visualização da Cadeia de Valor</span>
+        </h2>
+        
+        <div class="graph-card">
+          <!-- Loading overlay for the graph -->
+          <div *ngIf="loading" class="loading-container" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.8); z-index: 5;">
+            <div class="loading-spinner"></div>
+            <p>Carregando dados da rede...</p>
+          </div>
+          
+          <!-- The graph container is always in the DOM, even during loading -->
+          <div id="graph-container"></div>
+          
+          <!-- Legend integrated directly below the graph -->
+          <div class="integrated-legend">
+            <div *ngIf="analysisView === 'ecosystem'" class="legend-items">
+              <div class="legend-item">
+                <span class="legend-color-box" style="background-color: #ff4b4b;"></span>
+                <span>Empresa com alta centralidade</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color-box" style="background-color: #999;"></span>
+                <span>Conexão de pagamento</span>
+              </div>
+            </div>
+            <div *ngIf="analysisView === 'company'" class="legend-items">
+              <div class="legend-item">
+                <span class="legend-color-box" style="background-color: #ff4b4b;"></span>
+                <span>Empresa selecionada</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color-box" style="background-color: #28a745;"></span>
+                <span>Cliente</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color-box" style="background-color: #007bff;"></span>
+                <span>Fornecedor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Critical Dependencies Table - Only for Ecosystem View -->
+      <div *ngIf="analysisView === 'ecosystem' && criticalDependencies.length > 0" class="dependencies-section">
+        <h2>Relações de Dependência Críticas</h2>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Empresa Dependente</th>
+                <th>Cliente Chave</th>
+                <th>Nível de Dependência</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let dep of criticalDependencies">
+                <td>{{ dep.empresa_dependente }}</td>
+                <td>{{ dep.cliente_chave }}</td>
+                <td>{{ formatPercentage(dep.dependencia / 100) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Legend section removed and integrated with graph visualization -->
+    </div>
+  </div>
+</div>

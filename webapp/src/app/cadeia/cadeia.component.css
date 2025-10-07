@@ -1,0 +1,334 @@
+/* Import shared styles */
+@import '../home/home.component.css';
+
+/* Section Titles - Dashboard Style */
+.ai-section h2,
+.graph-section h2,
+.dependencies-section h2 {
+  margin-bottom: 24px;
+  color: #1a1a1a;
+  font-size: 22px;
+  font-weight: 600;
+  position: relative;
+  padding-left: 16px;
+}
+
+.ai-section h2::before,
+.graph-section h2::before,
+.dependencies-section h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(180deg, #d32f2f 0%, #ff6b6b 100%);
+  border-radius: 2px;
+}
+
+/* View Selector Section */
+.view-selector-section {
+  margin-bottom: 24px;
+}
+
+.view-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f5f5f5;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+  background: #e8e8e8;
+}
+
+.view-btn.active {
+  background: #d32f2f;
+  color: white;
+  border-color: #b71c1c;
+}
+
+.view-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Filter Row */
+.filter-row {
+  margin-bottom: 16px;
+}
+
+.range-slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-slider input {
+  flex: 1;
+}
+
+.range-slider span {
+  font-weight: 600;
+  color: #d32f2f;
+  width: 60px;
+  text-align: center;
+}
+
+/* Performance toggle styling */
+.performance-toggle {
+  margin-top: 8px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-label input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.toggle-text {
+  font-weight: 500;
+  color: #333;
+}
+
+.toggle-hint {
+  font-size: 12px;
+  color: #777;
+  margin-top: 4px;
+  padding-left: 24px;
+}
+
+/* AI Analysis Section */
+.ai-section {
+  margin-bottom: 48px;
+}
+
+.ai-summary {
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #2c2c2c;
+}
+
+.ai-summary:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+/* Graph Visualization */
+.graph-section {
+  margin-bottom: 48px;
+}
+
+.graph-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e8eaed;
+  height: 740px; /* Increased to accommodate the legend */
+  overflow: hidden;
+  position: relative; /* Importante para posicionamento absoluto interno */
+}
+
+/* Integrated legend styling */
+.integrated-legend {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e8eaed;
+}
+
+#graph-container {
+  width: 100%;
+  height: calc(100% - 60px); /* Adjusted to leave space for the legend */
+  min-height: 560px; /* Adjusted for legend space */
+  position: relative;
+  display: block;
+  background-color: #fafafa; /* Fundo levemente cinza para debug */
+  border: 2px solid #dadada; /* Borda mais visível */
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Garantir que o grafo SVG preenche todo o container */
+#graph-container svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Estilo para nós e links para garantir que são visíveis */
+.nodes circle {
+  stroke-width: 1.5px;
+  transition: all 0.3s ease;
+}
+
+.links line {
+  stroke-width: 1px;
+  stroke-opacity: 0.6;
+}
+
+/* Melhorias no visual do tooltip */
+.graph-tooltip {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* D3 Graph Styling */
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+  cursor: pointer;
+}
+
+/* Dependencies Table */
+.dependencies-section {
+  margin-bottom: 48px;
+}
+
+.table-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e8eaed;
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.data-table th {
+  font-weight: 600;
+  color: #666;
+  background-color: #f9f9f9;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* Legend */
+.legend-section {
+  margin-bottom: 32px;
+}
+
+.legend-section h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.legend-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e8eaed;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center; /* Center the legend items */
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.legend-color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+/* Styling for the integrated legend */
+.integrated-legend .legend-items {
+  padding: 10px 0;
+}
+
+.integrated-legend .legend-item {
+  margin: 0 15px;
+}
+
+/* Graph tooltip */
+.graph-tooltip {
+  position: absolute;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 10;
+  max-width: 200px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .view-buttons {
+    flex-direction: column;
+  }
+  
+  .graph-card {
+    height: 500px;
+  }
+  
+  .ai-summary {
+    padding: 20px;
+    font-size: 14px;
+  }
+  
+  .legend-items {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

@@ -1,11 +1,7 @@
 from neo4j import GraphDatabase
-import os
 from fastapi import HTTPException
 import pandas as pd
-
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASS = os.getenv("NEO4J_PASS", "password")
+from app.core.config import NEO4J_URI, NEO4J_USER, NEO4J_PASS
 
 class GraphService:
     def __init__(self):
@@ -13,9 +9,16 @@ class GraphService:
 
     def get_nodes(self):
         query = "MATCH (e:Empresa) RETURN e.id AS id ORDER BY id"
-        with self.driver.session(database="neo4j") as session:
-            result = session.run(query)
-            return [record["id"] for record in result]
+        try:
+            with self.driver.session(database="neo4j") as session:
+                result = session.run(query)
+                nodes = [record["id"] for record in result]
+                print(f"Neo4j: Encontrados {len(nodes)} nós de empresas")
+                return nodes
+        except Exception as e:
+            print(f"Erro ao conectar com Neo4j: {e}")
+            # Retornar lista vazia em vez de lançar exceção para evitar quebrar o frontend
+            return []
 
     def get_edges(self, limit=500):
         query = """
@@ -23,9 +26,16 @@ class GraphService:
         RETURN p.id AS source, c.id AS target, r.valor AS value, r.tipo AS type, r.data AS date
         ORDER BY value DESC LIMIT $limit
         """
-        with self.driver.session(database="neo4j") as session:
-            result = session.run(query, limit=limit)
-            return [dict(record) for record in result]
+        try:
+            with self.driver.session(database="neo4j") as session:
+                result = session.run(query, limit=limit)
+                edges = [dict(record) for record in result]
+                print(f"Neo4j: Encontradas {len(edges)} arestas com limite {limit}")
+                return edges
+        except Exception as e:
+            print(f"Erro ao buscar arestas do Neo4j: {e}")
+            # Retornar lista vazia em vez de lançar exceção
+            return []
 
     def get_neighborhood(self, company_id):
         query = """

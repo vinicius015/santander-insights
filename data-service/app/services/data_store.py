@@ -5,11 +5,11 @@ import pandas
 
 class DataStore:
     def __init__(self):
-        self.companies_df: Optional[pandas.DataFrama] = None
-        self.industries_df: Optional[pandas.DataFrama] = None
-        self.transactions_df: Optional[pandas.DataFrama] = None
-        self.monthly_cashflow_summary: Optional[pandas.DataFrama] = None
-        self.all_companies_profiles: Optional[pandas.DataFrama] = None
+        self.companies_df: Optional[pandas.DataFrame] = None
+        self.industries_df: Optional[pandas.DataFrame] = None
+        self.transactions_df: Optional[pandas.DataFrame] = None
+        self.monthly_cashflow_summary: Optional[pandas.DataFrame] = None
+        self.all_companies_profiles: Optional[pandas.DataFrame] = None
     
     def initialize_data(self):
         from app.services.companies_service import create_monthly_cashflow_summary, segment_companies_by_moment

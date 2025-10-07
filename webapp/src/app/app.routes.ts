@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { EmpresaComponent } from './empresa/empresa.component';
 import { PrevisaoComponent } from './previsao/previsao.component';
+import { CadeiaComponent } from './cadeia/cadeia.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -9,5 +10,6 @@ export const routes: Routes = [
   { path: 'dashboard', redirectTo: 'home' },
   { path: 'empresa', component: EmpresaComponent },
   { path: 'previsao', component: PrevisaoComponent },
+  { path: 'cadeia', component: CadeiaComponent },
   { path: '**', redirectTo: '' }
 ];

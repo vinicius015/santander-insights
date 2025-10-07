@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 export interface KPIs {
   total_companies: number;
@@ -161,6 +161,51 @@ export interface ForecastAnalysis {
   ai_analysis?: string;
 }
 
+export interface GraphNode {
+  id: string;
+  name: string;
+  type?: string; // 'central', 'cliente', 'fornecedor', etc.
+  sector?: string;
+  community?: number;
+  centrality?: number;
+  size?: number;
+}
+
+export interface GraphLink {
+  source: string;
+  target: string;
+  value: number;
+  type?: string;
+}
+
+export interface GraphData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
+export interface EcosystemAnalysis {
+  graph_data: GraphData;
+  ai_summary?: string;
+  communities?: {
+    id: number;
+    key_companies: string[];
+    size: number;
+  }[];
+  dependencies?: any[];
+}
+
+export interface CompanyNetworkAnalysis {
+  company_id: string;
+  graph_data: GraphData;
+  ai_analysis?: string;
+  key_relationships?: {
+    company_id: string;
+    company_name: string;
+    relationship_strength: number;
+    relationship_type: string;
+  }[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -261,5 +306,310 @@ export class DataService {
         } as ForecastAnalysis;
       })
     );
+  }
+  
+  // Graph Data and AI Analysis methods for Cadeia de Valor
+
+  getEcosystemGraphData(): Observable<GraphData> {
+    // Buscar nós e arestas separadamente e combinar os resultados
+    return forkJoin({
+      nodesResponse: this.http.get<{nodes: string[]}>(`${this.baseUrl}/graph/nodes`),
+      edgesResponse: this.http.get<{edges: any[]}>(`${this.baseUrl}/graph/edges`)
+    }).pipe(
+      map(({nodesResponse, edgesResponse}) => {
+        console.log(`Recebidos ${nodesResponse.nodes.length} nós e ${edgesResponse.edges.length} arestas do servidor`);
+        
+        // Verificação de dados válidos
+        if (!nodesResponse.nodes || !edgesResponse.edges) {
+          console.error('Dados inválidos recebidos do servidor:', { nodesResponse, edgesResponse });
+          throw new Error('Dados inválidos recebidos do servidor');
+        }
+        
+        // Calcular métricas básicas de centralidade baseadas na contagem de conexões
+        const nodeConnections = new Map<string, number>();
+        
+        // Contar as conexões por nó
+        edgesResponse.edges.forEach(edge => {
+          if (edge.source) {
+            nodeConnections.set(edge.source, (nodeConnections.get(edge.source) || 0) + 1);
+          }
+          if (edge.target) {
+            nodeConnections.set(edge.target, (nodeConnections.get(edge.target) || 0) + 1);
+          }
+        });
+        
+        // Transform string node IDs into proper GraphNode objects with centrality metrics
+        const nodes: GraphNode[] = nodesResponse.nodes.map(id => {
+          const connections = nodeConnections.get(id) || 0;
+          
+          return {
+            id: id,
+            name: id,
+            centrality: connections,
+            // Tamanho proporcional à centralidade, com limites min/max
+            size: Math.min(Math.max(3, Math.sqrt(connections) + 3), 10)
+          };
+        });
+        
+        // Transform edge data into proper GraphLink objects
+        // Filtra arestas com valores muito baixos para reduzir a complexidade
+        const links: GraphLink[] = edgesResponse.edges
+          .filter(edge => edge && edge.source && edge.target && (edge.value > 0.05))
+          .map(edge => ({
+            source: edge.source,
+            target: edge.target,
+            value: edge.value || 1,
+            type: edge.type
+          }));
+        
+        console.log('Dados do grafo processados com sucesso:', { nodeCount: nodes.length, linkCount: links.length });
+        
+        // Garantir que temos algum dado para exibir
+        if (nodes.length === 0) {
+          console.warn('Nenhum nó foi encontrado nos dados retornados');
+        }
+        
+        return { nodes, links } as GraphData;
+      }),
+      catchError(error => {
+        console.error('Erro ao buscar dados do grafo:', error);
+        return of({ nodes: [], links: [] });
+      })
+    );
+  }
+
+  getCompanyNetworkData(companyId: string, depth: number = 2): Observable<GraphData> {
+    return this.http.get<any>(`${this.baseUrl}/graph/neighborhood/${companyId}`).pipe(
+      map(data => {
+        // Transformar formato do backend para o formato GraphData
+        const nodes: GraphNode[] = [];
+        const links: GraphLink[] = [];
+        
+        // Adicionar nó central
+        nodes.push({
+          id: data.id,
+          name: data.id,
+          type: 'central'
+        });
+        
+        // Adicionar clientes e arestas
+        if (data.clientes && Array.isArray(data.clientes)) {
+          data.clientes.forEach((clienteId: string) => {
+            nodes.push({
+              id: clienteId,
+              name: clienteId,
+              type: 'cliente'
+            });
+            
+            links.push({
+              source: clienteId,
+              target: data.id,
+              value: 1,
+              type: 'cliente'
+            });
+          });
+        }
+        
+        // Adicionar fornecedores e arestas
+        if (data.fornecedores && Array.isArray(data.fornecedores)) {
+          data.fornecedores.forEach((fornecedorId: string) => {
+            nodes.push({
+              id: fornecedorId,
+              name: fornecedorId,
+              type: 'fornecedor'
+            });
+            
+            links.push({
+              source: data.id,
+              target: fornecedorId,
+              value: 1,
+              type: 'fornecedor'
+            });
+          });
+        }
+        
+        console.log('Processed company network data:', { nodes, links, originalData: data });
+        return {
+          nodes,
+          links
+        } as GraphData;
+      }),
+      catchError(error => {
+        console.error('Error fetching company network data:', error);
+        return of({ 
+          nodes: [{ id: companyId, name: companyId, type: 'central' }],
+          links: []
+        });
+      })
+    );
+  }
+
+  getEcosystemAISummary(): Observable<{summary: string}> {
+    return this.http.get<{summary: string}>(`${this.baseUrl}/graph-ai/ecosystem-summary`).pipe(
+      catchError(error => {
+        console.warn('Erro ao buscar sumário do ecossistema:', error);
+        return of({ summary: 'Análise do ecossistema não disponível no momento.' });
+      })
+    );
+  }
+
+  getCompanyNetworkAIAnalysis(companyId: string, depth: number = 2): Observable<{analysis: string}> {
+    const params = new HttpParams().set('depth', depth.toString());
+    return this.http.get<{analysis: string}>(`${this.baseUrl}/graph-ai/company-analysis/${companyId}`, { params });
+  }
+
+  getEcosystemAnalysis(): Observable<EcosystemAnalysis> {
+    console.log('Iniciando requisição de dados do ecossistema');
+    
+    return forkJoin({
+      graphData: this.getEcosystemGraphData(),
+      aiSummary: this.getEcosystemAISummary(),
+      dependencies: this.http.get<{dependencies: any[]}>(`${this.baseUrl}/graph/dependencies`)
+        .pipe(
+          catchError(error => {
+            console.warn('Erro ao buscar dependências, usando array vazio:', error);
+            return of({dependencies: []});
+          })
+        )
+    }).pipe(
+      map(({graphData, aiSummary, dependencies}) => {
+        console.log('Todas as requisições de ecossistema concluídas com sucesso');
+        
+        // Since we don't have actual community data from the backend,
+        // we'll create a simplified version based on available data
+        const communities: {id: number, key_companies: string[], size: number}[] = [];
+        
+        const result = {
+          graph_data: graphData,
+          ai_summary: aiSummary?.summary || 'Análise do ecossistema não disponível no momento.',
+          communities: communities,
+          dependencies: dependencies?.dependencies || []
+        } as EcosystemAnalysis;
+        
+        console.log('Dados de ecossistema processados:', { 
+          nodesCount: result.graph_data?.nodes?.length || 0,
+          linksCount: result.graph_data?.links?.length || 0,
+          dependenciesCount: result.dependencies?.length || 0,
+          hasSummary: !!result.ai_summary
+        });
+        
+        return result;
+      }),
+      catchError(error => {
+        console.error('Erro ao processar dados do ecossistema:', error);
+        // Retornar um objeto vazio mas válido em caso de erro
+        return of({
+          graph_data: { nodes: [], links: [] },
+          ai_summary: 'Não foi possível carregar a análise do ecossistema devido a um erro na conexão com o servidor.',
+          communities: [],
+          dependencies: []
+        } as EcosystemAnalysis);
+      })
+    );
+  }
+
+  getCompanyNetworkAnalysis(companyId: string, depth: number = 2): Observable<CompanyNetworkAnalysis> {
+    return forkJoin({
+      graphData: this.getCompanyNetworkData(companyId, depth),
+      aiAnalysis: this.getCompanyNetworkAIAnalysis(companyId, depth)
+    }).pipe(
+      map(({graphData, aiAnalysis}) => {
+        // Extract key relationships
+        const keyRelationships = this.extractKeyRelationships(graphData, companyId);
+        
+        return {
+          company_id: companyId,
+          graph_data: graphData,
+          ai_analysis: aiAnalysis.analysis,
+          key_relationships: keyRelationships
+        } as CompanyNetworkAnalysis;
+      }),
+      catchError(error => {
+        console.error('Error in company network analysis:', error);
+        return of({
+          company_id: companyId,
+          graph_data: { 
+            nodes: [{ id: companyId, name: companyId, type: 'central' }],
+            links: []
+          },
+          ai_analysis: 'Não foi possível carregar a análise da cadeia de valor para esta empresa.',
+          key_relationships: []
+        } as CompanyNetworkAnalysis);
+      })
+    );
+  }
+
+  // Helper methods for processing graph data
+  private extractCommunities(graphData: GraphData): {id: number, key_companies: string[], size: number}[] {
+    const communitiesMap = new Map<number, string[]>();
+    
+    // Group nodes by community
+    graphData.nodes.forEach(node => {
+      if (node.community !== undefined) {
+        if (!communitiesMap.has(node.community)) {
+          communitiesMap.set(node.community, []);
+        }
+        communitiesMap.get(node.community)?.push(node.id);
+      }
+    });
+    
+    // Format communities
+    return Array.from(communitiesMap.entries()).map(([id, companies]) => {
+      // Sort companies by centrality to find key companies (top 3)
+      const keyCompanies = graphData.nodes
+        .filter(node => companies.includes(node.id))
+        .sort((a, b) => (b.centrality || 0) - (a.centrality || 0))
+        .slice(0, 3)
+        .map(node => node.id);
+      
+      return {
+        id,
+        key_companies: keyCompanies,
+        size: companies.length
+      };
+    });
+  }
+
+  private extractKeyRelationships(graphData: GraphData, companyId: string): {
+    company_id: string;
+    company_name: string;
+    relationship_strength: number;
+    relationship_type: string;
+  }[] {
+    if (!graphData || !graphData.links || !graphData.nodes) {
+      return [];
+    }
+    
+    // Handle both string and object references for source/target
+    const normalizeId = (id: any): string => {
+      if (typeof id === 'string') return id;
+      if (id && typeof id === 'object' && id.id) return id.id;
+      return '';
+    };
+    
+    // Find all links connected to the company
+    const relationships = graphData.links
+      .filter(link => {
+        const source = normalizeId(link.source);
+        const target = normalizeId(link.target);
+        return source === companyId || target === companyId;
+      })
+      .map(link => {
+        const source = normalizeId(link.source);
+        const target = normalizeId(link.target);
+        const partnerId = source === companyId ? target : source;
+        const partnerNode = graphData.nodes.find(node => node.id === partnerId);
+        
+        return {
+          company_id: partnerId,
+          company_name: partnerNode?.name || partnerId,
+          relationship_strength: link.value || 1,
+          relationship_type: link.type || 'transaction'
+        };
+      })
+      .sort((a, b) => b.relationship_strength - a.relationship_strength)
+      .slice(0, 10); // Top 10 relationships
+      
+    return relationships;
   }
 }
